@@ -8,7 +8,7 @@ import sharp from 'sharp'
 import Workflows from './collections/Workflows'
 import WorkflowLogs from './collections/WorkflowLogs'
 import { Users } from './collections/Users'
-import { Media } from './collections/Media'
+
 import Posts from './collections/Posts'
 
 import { workflowEndpoints } from './endpoints/workflowEndpoints'
@@ -24,7 +24,7 @@ export default buildConfig({
     },
   },
 
-  collections: [Users, Media, Posts, Workflows, WorkflowLogs],
+  collections: [Users, Posts, Workflows, WorkflowLogs],
 
   endpoints: [...workflowEndpoints],
 
