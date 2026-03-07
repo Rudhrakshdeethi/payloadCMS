@@ -1,19 +1,18 @@
 export const workflowEndpoints = [
   {
-    access: {
-      read: () => true,
-      create: () => true,
-      update: () => true,
-      delete: () => true,
-    },
     path: '/workflows/approve',
     method: 'post',
+
     handler: async (req: any) => {
-      const { docId, collection } = req.body
+      const body = await req.json()
+      const { docId, collection } = body
+
+      if (!docId || !collection) {
+        return Response.json({ error: 'docId and collection required' })
+      }
 
       const payload = req.payload
 
-      // get the document (post)
       const doc = await payload.findByID({
         collection,
         id: docId,
@@ -36,7 +35,6 @@ export const workflowEndpoints = [
 
       const nextStep = steps[currentStepIndex + 1]
 
-      // FINAL STEP COMPLETED
       if (!nextStep) {
         await payload.update({
           collection,
@@ -62,7 +60,6 @@ export const workflowEndpoints = [
         })
       }
 
-      // MOVE TO NEXT STEP
       await payload.update({
         collection,
         id: docId,
