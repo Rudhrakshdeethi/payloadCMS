@@ -1,37 +1,24 @@
-export const runWorkflowEngine = async ({ payload, doc, collection, user }) => {
+export const runWorkflowEngine = async ({ doc, req }: any) => {
   if (!doc.workflow) return
 
-  const workflow = await payload.findByID({
+  const workflowId = typeof doc.workflow === 'object' ? doc.workflow.id : doc.workflow
+
+  const workflow = await req.payload.findByID({
     collection: 'workflows',
-    id: doc.workflow,
+    id: workflowId,
   })
 
-  const sortedSteps = workflow.steps.sort((a, b) => a.order - b.order)
+  const steps = [...workflow.steps].sort((a: any, b: any) => a.order - b.order)
 
-  const firstStep = sortedSteps[0]
+  const firstStep = steps[0]
 
-  console.log(`Workflow started for ${doc.id}`)
-  console.log(`Step: ${firstStep.stepName}`)
-
-  await payload.update({
-    collection,
+  await req.payload.update({
+    collection: 'posts',
     id: doc.id,
     data: {
       workflowStatus: 'in_review',
       currentStep: firstStep.stepName,
       assignedTo: firstStep.assignedUser,
-    },
-  })
-
-  // log workflow start
-  await payload.create({
-    collection: 'workflowLogs',
-    data: {
-      workflow: workflow.id,
-      action: 'workflow_started',
-      performedBy: user?.id,
-      step: firstStep.stepName,
-      documentId: doc.id,
     },
   })
 }

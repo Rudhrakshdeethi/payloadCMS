@@ -1,5 +1,4 @@
 import { CollectionConfig } from 'payload'
-import { runWorkflowEngine } from '../workflow/engine'
 
 const Posts: CollectionConfig = {
   slug: 'posts',
@@ -18,32 +17,36 @@ const Posts: CollectionConfig = {
   hooks: {
     afterChange: [
       async ({ doc, req, operation }) => {
-
         if (operation !== 'create') return
-
         if (!doc.workflow) return
 
-        const workflow = await req.payload.findByID({
-          collection: 'workflows',
-          id: doc.workflow,
-        })
+        try {
+          const workflowId = typeof doc.workflow === 'object' ? doc.workflow.id : doc.workflow
 
-        const sortedSteps = workflow.steps.sort((a: any, b: any) => a.order - b.order)
+          const workflow = await req.payload.findByID({
+            collection: 'workflows',
+            id: workflowId,
+          })
 
-        const firstStep = sortedSteps[0]
+          const sortedSteps = [...workflow.steps].sort((a: any, b: any) => a.order - b.order)
 
-        console.log(`Workflow started for post ${doc.id}`)
-        console.log(`First step: ${firstStep.stepName}`)
+          const firstStep = sortedSteps[0]
 
-        await req.payload.update({
-          collection: 'posts',
-          id: doc.id,
-          data: {
-            workflowStatus: 'in_review',
-            currentStep: firstStep.stepName,
-            assignedTo: firstStep.assignedUser,
-          },
-        })
+          console.log(`Workflow started for post ${doc.id}`)
+          console.log(`First step: ${firstStep.stepName}`)
+
+          await req.payload.update({
+            collection: 'posts',
+            id: doc.id,
+            data: {
+              workflowStatus: 'in_review',
+              currentStep: firstStep.stepName,
+              assignedTo: firstStep.assignedUser,
+            },
+          })
+        } catch (err) {
+          console.error('Workflow hook error:', err)
+        }
       },
     ],
   },
@@ -54,18 +57,15 @@ const Posts: CollectionConfig = {
       type: 'text',
       required: true,
     },
-
     {
       name: 'content',
       type: 'richText',
     },
-
     {
       name: 'workflow',
       type: 'relationship',
       relationTo: 'workflows',
     },
-
     {
       name: 'workflowStatus',
       type: 'select',
@@ -75,7 +75,6 @@ const Posts: CollectionConfig = {
         readOnly: true,
       },
     },
-
     {
       name: 'currentStep',
       type: 'text',
@@ -83,7 +82,6 @@ const Posts: CollectionConfig = {
         readOnly: true,
       },
     },
-
     {
       name: 'assignedTo',
       type: 'relationship',

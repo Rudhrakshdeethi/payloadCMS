@@ -5,11 +5,11 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import Workflows from './collections/Workflows'
-import WorkflowLogs from './collections/WorkflowLogs'
-import { Users } from './collections/Users'
+import Workflows from './collectionsPage/Workflows'
+import WorkflowLogs from './collectionsPage/WorkflowLogs'
+import { Users } from './collectionsPage/Users'
 
-import Posts from './collections/Posts'
+import Posts from './collectionsPage/Posts'
 
 import { workflowEndpoints } from './endpoints/workflowEndpoints'
 
